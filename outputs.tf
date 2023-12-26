@@ -1,3 +1,7 @@
-# output "vault_kv_secret_v2_path" {
-#   value = vault_kv_secret_v2.database.path
-# }
+output "kubernetes_endpoint" {
+  value = module.kind_cluster.kubernetes_endpoint
+}
+
+output "kubernetes_service_host" {
+  value = module.ingress_nginx.kubernetes_service_host
+}
