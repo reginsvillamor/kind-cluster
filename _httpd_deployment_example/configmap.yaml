@@ -1,0 +1,11 @@
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   name: httpd-custom-index
+#   namespace: httpd
+# data:
+#   index.html: |
+#     <html>
+#       <h1>It works! (Custom)</h1>
+#       <p>Environment: ${ENVIRONMENT}</p>
+#     </html>
