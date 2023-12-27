@@ -24,6 +24,11 @@ terraform {
   required_version = ">= 1.0.0"
 }
 
+provider "vault" {
+  address = "http://localhost"
+  token   = "root"
+}
+
 provider "kubernetes" {
   config_path = pathexpand(var.kind_cluster_config_path)
 }
