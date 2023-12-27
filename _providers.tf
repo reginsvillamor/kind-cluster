@@ -26,7 +26,7 @@ terraform {
 
 provider "vault" {
   address = "http://localhost"
-  token   = "root"
+  token   = "root" # 'development' mode token
 }
 
 provider "kubernetes" {
