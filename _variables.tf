@@ -21,3 +21,9 @@ variable "ingress_nginx_namespace" {
   description = "The nginx ingress namespace (it will be created if needed)."
   default     = "ingress-nginx"
 }
+
+variable "vault_namespace" {
+  type        = string
+  description = "The vault namespace to use."
+  default     = "vault"
+}

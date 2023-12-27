@@ -1,0 +1,13 @@
+server:
+  ingress:
+    enabled: true
+    annotations: |
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "false"
+    ingressClassName: "nginx"
+    hosts:
+      - host: "localhost"
+        # paths:
+        #   - /ui
+ui:
+  enabled: true
