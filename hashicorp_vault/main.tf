@@ -28,8 +28,8 @@ resource "null_resource" "wait_for_vault" {
   depends_on = [helm_release.vault]
 }
 
-resource "vault_mount" "secret" {
-  path        = "custom-secret" # NOTE: 'secret/' path default in 'development' mode
+resource "vault_mount" "internal" {
+  path        = "internal"
   type        = "kv"
   options     = { version = "2" }
   description = "KV Version 2 secret engine mount"
@@ -38,7 +38,7 @@ resource "vault_mount" "secret" {
 }
 
 resource "vault_kv_secret_v2" "secret" {
-  mount               = vault_mount.secret.path
+  mount               = vault_mount.internal.path
   name                = "database/config"
   cas                 = 1
   delete_all_versions = true
