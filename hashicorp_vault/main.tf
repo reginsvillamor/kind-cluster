@@ -1,18 +1,31 @@
-resource "kubernetes_namespace" "vault" {
-  metadata {
-    name = var.vault_namespace
-  }
-}
-
 resource "helm_release" "vault" {
-  name       = "vault"
-  namespace  = kubernetes_namespace.vault.metadata.0.name
-  repository = "https://helm.releases.hashicorp.com"
-  chart      = "vault"
-  version    = "0.27.0"
+  name             = "vault"
+  namespace        = var.vault_namespace
+  repository       = "https://helm.releases.hashicorp.com"
+  chart            = "vault"
+  version          = "0.27.0"
+  create_namespace = true
 
   values = [file("hashicorp_vault/values.yaml")]
+}
 
+resource "null_resource" "wait_for_vault" {
+  triggers = {
+    key = uuid()
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+      printf "\nWaiting for vault...\n"
+
+      kubectl --kubeconfig ~/.kind_kube/config wait --namespace ${var.vault_namespace} \
+        --for=condition=ready pod \
+        --selector=app.kubernetes.io/instance=vault \
+        --timeout=90s 
+    EOF
+  }
+
+  depends_on = [helm_release.vault]
 }
 
 resource "vault_mount" "secret" {
@@ -21,7 +34,7 @@ resource "vault_mount" "secret" {
   options     = { version = "2" }
   description = "KV Version 2 secret engine mount"
 
-  depends_on = [helm_release.vault]
+  depends_on = [vault_auth_backend.kubernetes]
 }
 
 resource "vault_kv_secret_v2" "secret" {
@@ -32,30 +45,10 @@ resource "vault_kv_secret_v2" "secret" {
   data_json           = jsonencode({ username = "zap", password = "bar" })
 }
 
-# resource "kubernetes_secret" "vault_db_reader" {
-#   metadata {
-#     name = "vault-db-reader"
-#     namespace = "httpd"
-#     annotations = {
-#       "kubernetes.io/service-account.name" = kubernetes_service_account.vault_db_reader.metadata.0.name
-#     } 
-#   }
-#   type                           = "kubernetes.io/service-account-token"
-#   wait_for_service_account_token = true
-# }
-
-# resource "kubernetes_service_account" "vault_db_reader" {
-#   metadata {
-#     name      = "vault-db-reader"
-#     namespace = "httpd"
-#   }
-#   secret {
-#     name = "vault-db-reader"
-#   }
-# }
-
 resource "vault_auth_backend" "kubernetes" {
   type = "kubernetes"
+
+  depends_on = [null_resource.wait_for_vault]
 }
 
 resource "vault_kubernetes_auth_backend_config" "kubernetes" {

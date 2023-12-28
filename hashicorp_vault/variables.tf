@@ -1,7 +1,7 @@
 variable "vault_namespace" {
   type        = string
   description = "The vault namespace to use."
-  nullable = false
+  nullable    = false
 }
 
 variable "kubernetes_host" {
@@ -13,5 +13,5 @@ variable "kubernetes_host" {
 variable "token_ttl" {
   type        = string
   description = "Role lease"
-  default = "86400"
+  default     = "86400"
 }
