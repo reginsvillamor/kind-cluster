@@ -6,7 +6,7 @@ resource "helm_release" "vault" {
   version          = "0.27.0"
   create_namespace = true
 
-  values = [file("hashicorp_vault/values.yaml")]
+  values = [file("${path.module}/values.yaml")]
 }
 
 resource "null_resource" "wait_for_vault" {

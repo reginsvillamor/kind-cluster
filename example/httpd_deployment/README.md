@@ -45,7 +45,14 @@
       secretName: root-ca-cert-secret
   ```
 
-### Trust the Self-Signed Certificate (*** Mac only ***)
+### To run deployment example
+```
+# NOTE: example using custom 'kubeconfig' location
+
+kubectl --kubeconfig ~/.kind_kube/config <path to example dir>/httpd.yaml
+```
+
+### To `trust` the generated self-signed certificate from the example (*** Mac only ***)
 As the certificate used to secure your HTTPS endpoint is a self-signed certificate, your web browser won’t recognise it until you change the system setting to make your local machine to trust the certificate.
 
 On a Mac, you can follow the steps below:
