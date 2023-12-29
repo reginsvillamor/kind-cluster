@@ -1,8 +1,45 @@
----
 apiVersion: v1
 kind: Namespace
 metadata:
   name: httpd
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: root-ca-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: root-ca-cert
+spec:
+  isCA: true
+  commonName: root-ca-cert
+  subject:
+    organizations:
+      - Kind Cluster Inc.
+    organizationalUnits:
+      - Kind
+  secretName: root-ca-cert-secret
+  dnsNames:
+    - "*.cluster.local"
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: root-ca-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: ca-issuer
+spec:
+  ca:
+    secretName: root-ca-cert-secret
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -38,9 +75,9 @@ spec:
       annotations:
         vault.hashicorp.com/agent-inject: "true"
         vault.hashicorp.com/role: "vault-db-reader"
-        vault.hashicorp.com/agent-inject-secret-database-config: "custom-secret/data/database/config"
+        vault.hashicorp.com/agent-inject-secret-database-config: "internal/data/database/config"
         vault.hashicorp.com/agent-inject-template-database-config: |
-          {{ with secret "custom-secret/data/database/config" -}}
+          {{ with secret "internal/data/database/config" -}}
           export POSTGRES_USER="{{ .Data.data.username }}"
           export POSTGRES_PASS="{{ .Data.data.password }}"
           {{- end }}
@@ -65,7 +102,7 @@ spec:
                         <p>Env: $ENVIRONMENT</p>
                         <p>User: $POSTGRES_USER</p>
                         <p>Pass: $POSTGRES_PASS</p>
-                      </html>  
+                      </html>
                     """ > htdocs/index.html
           resources:
             requests:
@@ -99,13 +136,17 @@ metadata:
   name: httpd-ingress
   namespace: httpd
   annotations:
-    kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "false"
+    # kubernetes.io/tls-acme: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /
+    cert-manager.io/cluster-issuer: ca-issuer
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - kind.cluster.local
+      secretName: kind-cluster-local-tls
   rules:
-    - host: localhost
+    - host: kind.cluster.local
       http:
         paths:
           - backend:
