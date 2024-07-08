@@ -3,7 +3,7 @@ resource "helm_release" "vault" {
   namespace        = var.vault_namespace
   repository       = "https://helm.releases.hashicorp.com"
   chart            = "vault"
-  version          = "0.27.0"
+  version          = "0.28.0"
   create_namespace = true
 
   values = [file("${path.module}/values.yaml")]
