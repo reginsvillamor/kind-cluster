@@ -1,0 +1,8 @@
+# IMPORTANT! for dev use only config
+global:
+  postgresql:
+    auth:
+      postgresPassword: "adminpassword"
+      username: "defaultuser"
+      password: "defaultpassword"
+      database: "trancode-db"
